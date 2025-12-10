@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="th" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Buddy</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Kanit', sans-serif;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary {
+      background: #667eea;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    
+    .btn-primary:hover {
+      background: #5568d3;
+    }
+    
+    .btn-secondary {
+      background: #48bb78;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    
+    .btn-secondary:hover {
+      background: #38a169;
+    }
+    
+    .btn-danger {
+      background: #f56565;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 400;
+      transition: background 0.2s;
+    }
+    
+    .btn-danger:hover {
+      background: #e53e3e;
+    }
+    
+    .lesson-item {
+      background: #f7fafc;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .lesson-item:hover {
+      background: #edf2f7;
+    }
+    
+    .post-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    
+    .image-preview {
+      max-width: 200px;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin: 8px;
+    }
+    
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto"><!-- Login Screen -->
+   <div id="loginScreen" class="gradient-bg h-full flex items-center justify-center p-6">
+    <div class="card p-8 max-w-md w-full">
+     <h1 id="siteTitle" class="text-3xl font-bold text-center mb-2" style="color: #667eea;">Study Buddy</h1>
+     <p id="welcomeMessage" class="text-center text-gray-600 mb-6">ยินดีต้อนรับสู่ระบบติวเตอร์ออนไลน์</p>
+     <div class="mb-4"><label for="usernameInput" class="block text-gray-700 font-medium mb-2">ชื่อผู้ใช้งาน</label> <input type="text" id="usernameInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="กรอกชื่อของคุณ">
+     </div>
+     <div class="mb-6"><label for="passwordInput" class="block text-gray-700 font-medium mb-2">รหัสผ่าน</label>
+      <div class="relative"><input type="password" id="passwordInput" class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="กรอกรหัสผ่านของคุณ"> <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-2xl" style="background: none; border: none; cursor: pointer; padding: 0;"> <span id="eyeIcon">👁️</span> </button>
+      </div>
+     </div><button onclick="login()" class="btn-primary w-full mb-3">เข้าสู่ระบบ</button> <button onclick="showRegister()" class="btn-secondary w-full">สมัครสมาชิก</button>
+     <div id="loginMessage" class="mt-3 text-center"></div>
+    </div>
+   </div><!-- Grade Selection Screen -->
+   <div id="gradeScreen" class="gradient-bg min-h-full p-6" style="display: none;">
+    <div class="max-w-4xl mx-auto">
+     <div class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold text-white">เลือกระดับชั้น</h2>
+      <div class="text-white flex items-center gap-4">
+       <div class="flex items-center gap-2"><span class="text-xl">👤</span> <span id="currentUser"></span>
+       </div><button onclick="logout()" class="text-sm underline">ออกจากระบบ</button>
+      </div>
+     </div>
+     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="card p-6 text-center cursor-pointer" onclick="selectGrade('ม.1')">
+       <div class="text-4xl mb-3">
+        📚
+       </div>
+       <h3 class="text-xl font-semibold">มัธยมศึกษาปีที่ 1</h3>
+      </div>
+      <div class="card p-6 text-center cursor-pointer" onclick="selectGrade('ม.2')">
+       <div class="text-4xl mb-3">
+        📚
+       </div>
+       <h3 class="text-xl font-semibold">มัธยมศึกษาปีที่ 2</h3>
+      </div>
+      <div class="card p-6 text-center cursor-pointer" onclick="selectGrade('ม.3')">
+       <div class="text-4xl mb-3">
+        📚
+       </div>
+       <h3 class="text-xl font-semibold">มัธยมศึกษาปีที่ 3</h3>
+      </div>
+      <div class="card p-6 text-center cursor-pointer" onclick="selectGrade('ม.4')">
+       <div class="text-4xl mb-3">
+        📖
+       </div>
+       <h3 class="text-xl font-semibold">มัธยมศึกษาปีที่ 4</h3>
+      </div>
+      <div class="card p-6 text-center cursor-pointer" onclick="selectGrade('ม.5')">
+       <div class="text-4xl mb-3">
+        📖
+       </div>
+       <h3 class="text-xl font-semibold">มัธยมศึกษาปีที่ 5</h3>
+      </div>
+      <div class="card p-6 text-center cursor-pointer" onclick="selectGrade('ม.6')">
+       <div class="text-4xl mb-3">
+        📖
+       </div>
+       <h3 class="text-xl font-semibold">มัธยมศึกษาปีที่ 6</h3>
+      </div>
+     </div>
+    </div>
+   </div><!-- Subject Selection Screen -->
+   <div id="subjectScreen" class="gradient-bg min-h-full p-6" style="display: none;">
+    <div class="max-w-4xl mx-auto">
+     <div class="flex justify-between items-center mb-6">
+      <div><button onclick="backToGrades()" class="text-white mb-2">← ย้อนกลับ</button>
+       <h2 class="text-3xl font-bold text-white">เลือกวิชา (<span id="selectedGrade"></span>)</h2>
+      </div>
+      <div class="text-white flex items-center gap-2"><span class="text-xl">👤</span> <span id="currentUser2"></span>
+      </div>
+     </div>
+     <div id="subjectList" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+    </div>
+   </div><!-- Lesson Selection Screen -->
+   <div id="lessonScreen" class="gradient-bg min-h-full p-6" style="display: none;">
+    <div class="max-w-4xl mx-auto">
+     <div class="flex justify-between items-center mb-6">
+      <div><button onclick="backToSubjects()" class="text-white mb-2">← ย้อนกลับ</button>
+       <h2 class="text-3xl font-bold text-white">เลือกบทเรียน</h2>
+       <p class="text-white"><span id="selectedSubject"></span> (<span id="selectedGrade2"></span>)</p>
+      </div>
+      <div class="text-white flex items-center gap-2"><span class="text-xl">👤</span> <span id="currentUser3"></span>
+      </div>
+     </div>
+     <div id="lessonList" class="space-y-3"></div>
+    </div>
+   </div><!-- Lesson Content Screen -->
+   <div id="contentScreen" class="gradient-bg min-h-full p-6" style="display: none;">
+    <div class="max-w-5xl mx-auto">
+     <div class="flex justify-between items-center mb-6">
+      <div><button onclick="backToLessons()" class="text-white mb-2">← ย้อนกลับ</button>
+       <h2 id="lessonTitle" class="text-3xl font-bold text-white"></h2>
+       <p class="text-white"><span id="selectedSubject2"></span> (<span id="selectedGrade3"></span>)</p>
+      </div>
+      <div class="text-white flex items-center gap-2"><span class="text-xl">👤</span> <span id="currentUser4"></span>
+      </div>
+     </div><!-- Add New Post Form -->
+     <div class="card p-6 mb-6">
+      <h3 class="text-xl font-semibold mb-4" style="color: #667eea;">เพิ่มเนื้อหาใหม่</h3>
+      <form id="addPostForm" onsubmit="addPost(event)">
+       <div class="mb-4"><label for="postContent" class="block text-gray-700 font-medium mb-2">เนื้อหา</label> <textarea id="postContent" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="เขียนเนื้อหาของคุณที่นี่..." required></textarea>
+       </div>
+       <div class="mb-4"><label for="postImages" class="block text-gray-700 font-medium mb-2">แนบรูปภาพ (เลือกได้หลายรูป)</label> <input type="file" id="postImages" accept="image/*" multiple class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="previewImages(event)">
+        <div id="imagePreview" class="flex flex-wrap mt-3"></div>
+       </div><button type="submit" class="btn-secondary" id="submitBtn">โพสต์เนื้อหา</button>
+      </form>
+     </div><!-- Posts List -->
+     <div id="postsList"></div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      site_title: "Study Buddy",
+      welcome_message: "ยินดีต้อนรับสู่ระบบติวเตอร์ออนไลน์",
+      primary_color: "#667eea",
+      secondary_color: "#48bb78",
+      danger_color: "#f56565",
+      background_color: "#f7fafc",
+      text_color: "#2d3748"
+    };
+
+    let currentUsername = '';
+    let currentGrade = '';
+    let currentSubject = '';
+    let currentLesson = '';
+    let selectedImages = [];
+    let isRegistering = false;
+
+    const subjects = {
+      'ม.1-3': [
+        { name: 'วิทยาศาสตร์', icon: '🔬' },
+        { name: 'คณิตศาสตร์', icon: '🔢' },
+        { name: 'ภาษาไทย', icon: '📝' },
+        { name: 'ภาษาอังกฤษ', icon: '🌍' },
+        { name: 'สังคมศึกษา', icon: '🌏' }
+      ],
+      'ม.4-6': [
+        { name: 'ฟิสิกส์', icon: '⚛️' },
+        { name: 'เคมี', icon: '🧪' },
+        { name: 'ชีววิทยา', icon: '🧬' },
+        { name: 'คณิตศาสตร์', icon: '🔢' },
+        { name: 'ภาษาไทย', icon: '📝' },
+        { name: 'ภาษาอังกฤษ', icon: '🌍' },
+        { name: 'สังคมศึกษา', icon: '🌏' }
+      ]
+    };
+
+    const lessons = {
+      'วิทยาศาสตร์': [
+        'บทที่ 1: สิ่งมีชีวิตกับสิ่งแวดล้อม',
+        'บทที่ 2: เซลล์และระบบของสิ่งมีชีวิต',
+        'บทที่ 3: สารและการเปลี่ยนแปลง',
+        'บทที่ 4: แสงและเสียง',
+        'บทที่ 5: พลังงานและการอนุรักษ์'
+      ],
+      'คณิตศาสตร์': [
+        'บทที่ 1: จำนวนเต็มและเลขยกกำลัง',
+        'บทที่ 2: เศษส่วนและทศนิยม',
+        'บทที่ 3: สมการและอสมการ',
+        'บทที่ 4: เรขาคณิต',
+        'บทที่ 5: สถิติและความน่าจะเป็น'
+      ],
+      'ภาษาไทย': [
+        'บทที่ 1: การอ่านและการเขียน',
+        'บทที่ 2: วรรณคดีไทย',
+        'บทที่ 3: หลักภาษาและการใช้ภาษา',
+        'บทที่ 4: การฟังและการดู',
+        'บทที่ 5: การพูดและการนำเสนอ'
+      ],
+      'ภาษาอังกฤษ': [
+        'Chapter 1: Grammar Basics',
+        'Chapter 2: Reading Comprehension',
+        'Chapter 3: Writing Skills',
+        'Chapter 4: Vocabulary Building',
+        'Chapter 5: Conversation Practice'
+      ],
+      'สังคมศึกษา': [
+        'บทที่ 1: ประวัติศาสตร์ไทย',
+        'บทที่ 2: ภูมิศาสตร์',
+        'บทที่ 3: เศรษฐศาสตร์เบื้องต้น',
+        'บทที่ 4: การเมืองการปกครอง',
+        'บทที่ 5: สังคมและวัฒนธรรม'
+      ],
+      'ฟิสิกส์': [
+        'บทที่ 1: การเคลื่อนที่และแรง',
+        'บทที่ 2: งานและพลังงาน',
+        'บทที่ 3: คลื่นและเสียง',
+        'บทที่ 4: ไฟฟ้าสถิต',
+        'บทที่ 5: แม่เหล็กไฟฟ้า'
+      ],
+      'เคมี': [
+        'บทที่ 1: อะตอมและโมเลกุล',
+        'บทที่ 2: ตารางธาตุ',
+        'บทที่ 3: พันธะเคมี',
+        'บทที่ 4: ปฏิกิริยาเคมี',
+        'บทที่ 5: สารละลาย'
+      ],
+      'ชีววิทยา': [
+        'บทที่ 1: เซลล์และเนื้อเยื่อ',
+        'บทที่ 2: พันธุกรรม',
+        'บทที่ 3: วิวัฒนาการ',
+        'บทที่ 4: ระบบนิเวศ',
+        'บทที่ 5: ความหลากหลายทางชีวภาพ'
+      ]
+    };
+
+    // Local Storage Functions
+    function getUsers() {
+      const users = localStorage.getItem('studyBuddyUsers');
+      return users ? JSON.parse(users) : [];
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('studyBuddyUsers', JSON.stringify(users));
+    }
+
+    function getPosts() {
+      const posts = localStorage.getItem('studyBuddyPosts');
+      return posts ? JSON.parse(posts) : [];
+    }
+
+    function savePosts(posts) {
+      localStorage.setItem('studyBuddyPosts', JSON.stringify(posts));
+    }
+
+    async function initializeApp() {
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            const siteTitle = config.site_title || defaultConfig.site_title;
+            const welcomeMessage = config.welcome_message || defaultConfig.welcome_message;
+            const primaryColor = config.primary_color || defaultConfig.primary_color;
+            const secondaryColor = config.secondary_color || defaultConfig.secondary_color;
+            const dangerColor = config.danger_color || defaultConfig.danger_color;
+            
+            document.getElementById('siteTitle').textContent = siteTitle;
+            document.getElementById('welcomeMessage').textContent = welcomeMessage;
+            
+            document.getElementById('siteTitle').style.color = primaryColor;
+            
+            const primaryButtons = document.querySelectorAll('.btn-primary');
+            primaryButtons.forEach(btn => {
+              btn.style.backgroundColor = primaryColor;
+            });
+            
+            const secondaryButtons = document.querySelectorAll('.btn-secondary');
+            secondaryButtons.forEach(btn => {
+              btn.style.backgroundColor = secondaryColor;
+            });
+            
+            const dangerButtons = document.querySelectorAll('.btn-danger');
+            dangerButtons.forEach(btn => {
+              btn.style.backgroundColor = dangerColor;
+            });
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.primary_color || defaultConfig.primary_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.setConfig({ primary_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.secondary_color || defaultConfig.secondary_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.setConfig({ secondary_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.danger_color || defaultConfig.danger_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.setConfig({ danger_color: value });
+                  }
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['site_title', config.site_title || defaultConfig.site_title],
+            ['welcome_message', config.welcome_message || defaultConfig.welcome_message]
+          ])
+        });
+      }
+    }
+
+    async function login() {
+      const username = document.getElementById('usernameInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
+      
+      if (!username) {
+        showLoginMessage('กรุณากรอกชื่อผู้ใช้งาน', 'error');
+        return;
+      }
+      
+      if (!password) {
+        showLoginMessage('กรุณากรอกรหัสผ่าน', 'error');
+        return;
+      }
+      
+      const users = getUsers();
+      const user = users.find(u => u.username === username && u.password === password);
+      
+      if (!user) {
+        showLoginMessage('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+        return;
+      }
+      
+      currentUsername = username;
+      document.getElementById('usernameInput').value = '';
+      document.getElementById('passwordInput').value = '';
+      showScreen('gradeScreen');
+      updateUserDisplay();
+    }
+    
+    function showRegister() {
+      isRegistering = true;
+      const loginBtn = document.querySelector('button[onclick="login()"]');
+      const registerBtn = document.querySelector('button[onclick="showRegister()"]');
+      
+      loginBtn.textContent = 'สมัครสมาชิก';
+      loginBtn.setAttribute('onclick', 'register()');
+      registerBtn.textContent = 'ยกเลิก';
+      registerBtn.setAttribute('onclick', 'cancelRegister()');
+      
+      showLoginMessage('กรุณากรอกชื่อผู้ใช้และรหัสผ่านเพื่อสมัครสมาชิก', 'info');
+    }
+    
+    function cancelRegister() {
+      isRegistering = false;
+      const loginBtn = document.querySelector('button[onclick="register()"]');
+      const registerBtn = document.querySelector('button[onclick="cancelRegister()"]');
+      
+      loginBtn.textContent = 'เข้าสู่ระบบ';
+      loginBtn.setAttribute('onclick', 'login()');
+      registerBtn.textContent = 'สมัครสมาชิก';
+      registerBtn.setAttribute('onclick', 'showRegister()');
+      
+      document.getElementById('usernameInput').value = '';
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('loginMessage').innerHTML = '';
+    }
+    
+    async function register() {
+      const username = document.getElementById('usernameInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
+      
+      if (!username) {
+        showLoginMessage('กรุณากรอกชื่อผู้ใช้งาน', 'error');
+        return;
+      }
+      
+      if (!password) {
+        showLoginMessage('กรุณากรอกรหัสผ่าน', 'error');
+        return;
+      }
+      
+      if (password.length < 4) {
+        showLoginMessage('รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร', 'error');
+        return;
+      }
+      
+      const users = getUsers();
+      const existingUser = users.find(u => u.username === username);
+      if (existingUser) {
+        showLoginMessage('ชื่อผู้ใช้นี้ถูกใช้งานแล้ว', 'error');
+        return;
+      }
+      
+      const newUser = {
+        id: Date.now().toString(),
+        username: username,
+        password: password,
+        created_at: new Date().toISOString()
+      };
+      
+      users.push(newUser);
+      saveUsers(users);
+      
+      showLoginMessage('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ', 'success');
+      setTimeout(() => {
+        cancelRegister();
+      }, 2000);
+    }
+    
+    function showLoginMessage(message, type) {
+      const msgDiv = document.getElementById('loginMessage');
+      msgDiv.textContent = message;
+      msgDiv.className = 'mt-3 text-center ' + (type === 'error' ? 'text-red-600' : type === 'success' ? 'text-green-600' : 'text-blue-600');
+    }
+    
+    function togglePassword() {
+      const passwordInput = document.getElementById('passwordInput');
+      const eyeIcon = document.getElementById('eyeIcon');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.textContent = '👁️‍🗨️';
+      } else {
+        passwordInput.type = 'password';
+        eyeIcon.textContent = '👁️';
+      }
+    }
+
+    function logout() {
+      currentUsername = '';
+      currentGrade = '';
+      currentSubject = '';
+      currentLesson = '';
+      document.getElementById('usernameInput').value = '';
+      showScreen('loginScreen');
+    }
+
+    function showScreen(screenId) {
+      const screens = ['loginScreen', 'gradeScreen', 'subjectScreen', 'lessonScreen', 'contentScreen'];
+      screens.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById(screenId).style.display = 'block';
+    }
+
+    function updateUserDisplay() {
+      document.getElementById('currentUser').textContent = currentUsername;
+      document.getElementById('currentUser2').textContent = currentUsername;
+      document.getElementById('currentUser3').textContent = currentUsername;
+      document.getElementById('currentUser4').textContent = currentUsername;
+    }
+
+    function selectGrade(grade) {
+      currentGrade = grade;
+      document.getElementById('selectedGrade').textContent = grade;
+      document.getElementById('selectedGrade2').textContent = grade;
+      document.getElementById('selectedGrade3').textContent = grade;
+      
+      const gradeNum = parseInt(grade.replace('ม.', ''));
+      const subjectKey = gradeNum <= 3 ? 'ม.1-3' : 'ม.4-6';
+      const subjectList = subjects[subjectKey];
+      
+      const container = document.getElementById('subjectList');
+      container.innerHTML = '';
+      
+      subjectList.forEach(subject => {
+        const div = document.createElement('div');
+        div.className = 'card p-6 text-center cursor-pointer';
+        div.onclick = () => selectSubject(subject.name);
+        div.innerHTML = `
+          <div class="text-4xl mb-3">${subject.icon}</div>
+          <h3 class="text-xl font-semibold">${subject.name}</h3>
+        `;
+        container.appendChild(div);
+      });
+      
+      showScreen('subjectScreen');
+    }
+
+    function selectSubject(subject) {
+      currentSubject = subject;
+      document.getElementById('selectedSubject').textContent = subject;
+      document.getElementById('selectedSubject2').textContent = subject;
+      
+      const lessonList = lessons[subject] || [];
+      const container = document.getElementById('lessonList');
+      container.innerHTML = '';
+      
+      lessonList.forEach(lesson => {
+        const div = document.createElement('div');
+        div.className = 'lesson-item';
+        div.onclick = () => selectLesson(lesson);
+        div.innerHTML = `<h3 class="text-lg font-medium">${lesson}</h3>`;
+        container.appendChild(div);
+      });
+      
+      showScreen('lessonScreen');
+    }
+
+    function selectLesson(lesson) {
+      currentLesson = lesson;
+      document.getElementById('lessonTitle').textContent = lesson;
+      renderPosts();
+      showScreen('contentScreen');
+    }
+
+    function backToGrades() {
+      showScreen('gradeScreen');
+    }
+
+    function backToSubjects() {
+      showScreen('subjectScreen');
+    }
+
+    function backToLessons() {
+      document.getElementById('postContent').value = '';
+      document.getElementById('postImages').value = '';
+      document.getElementById('imagePreview').innerHTML = '';
+      selectedImages = [];
+      showScreen('lessonScreen');
+    }
+
+    function previewImages(event) {
+      const files = event.target.files;
+      const preview = document.getElementById('imagePreview');
+      preview.innerHTML = '';
+      selectedImages = [];
+      
+      for (let file of files) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          selectedImages.push(e.target.result);
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'image-preview';
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function addPost(event) {
+      event.preventDefault();
+      
+      const content = document.getElementById('postContent').value.trim();
+      if (!content) {
+        showInlineMessage('กรุณากรอกเนื้อหา', 'postContent');
+        return;
+      }
+      
+      const posts = getPosts();
+      const post = {
+        id: Date.now().toString(),
+        lesson_id: `${currentGrade}-${currentSubject}-${currentLesson}`,
+        author: currentUsername,
+        content: content,
+        images: JSON.stringify(selectedImages),
+        created_at: new Date().toISOString()
+      };
+      
+      posts.push(post);
+      savePosts(posts);
+      
+      document.getElementById('postContent').value = '';
+      document.getElementById('postImages').value = '';
+      document.getElementById('imagePreview').innerHTML = '';
+      selectedImages = [];
+      
+      renderPosts();
+    }
+
+    function renderPosts() {
+      const container = document.getElementById('postsList');
+      const lessonId = `${currentGrade}-${currentSubject}-${currentLesson}`;
+      const allPosts = getPosts();
+      const lessonPosts = allPosts.filter(post => post.lesson_id === lessonId);
+      
+      if (lessonPosts.length === 0) {
+        container.innerHTML = '<div class="card p-6 text-center text-gray-500">ยังไม่มีเนื้อหาในบทเรียนนี้</div>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      lessonPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).forEach(post => {
+        const div = document.createElement('div');
+        div.className = 'post-card';
+        div.id = `post-${post.id}`;
+        
+        const images = JSON.parse(post.images || '[]');
+        const isAuthor = post.author === currentUsername;
+        
+        div.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h4 class="font-semibold text-lg flex items-center gap-2" style="color: ${defaultConfig.text_color};">
+                <span>👤</span>
+                <span>${post.author}</span>
+              </h4>
+              <p class="text-sm text-gray-500">${new Date(post.created_at).toLocaleString('th-TH')}</p>
+            </div>
+            ${isAuthor ? `
+              <div>
+                <button onclick="editPost('${post.id}')" class="text-blue-600 mr-2">✏️ แก้ไข</button>
+                <button onclick="deletePost('${post.id}')" class="text-red-600">🗑️ ลบ</button>
+              </div>
+            ` : ''}
+          </div>
+          <div id="content-${post.id}">
+            <p class="text-gray-800 mb-3 whitespace-pre-wrap">${post.content}</p>
+            ${images.length > 0 ? `
+              <div class="flex flex-wrap">
+                ${images.map(img => `<img src="${img}" class="image-preview" alt="รูปภาพ">`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+        
+        container.appendChild(div);
+      });
+    }
+
+    function editPost(postId) {
+      const posts = getPosts();
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+      
+      const postDiv = document.getElementById(`post-${postId}`);
+      const contentDiv = document.getElementById(`content-${postId}`);
+      const images = JSON.parse(post.images || '[]');
+      
+      contentDiv.innerHTML = `
+        <textarea id="edit-content-${postId}" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-3">${post.content}</textarea>
+        <div class="mb-3">
+          <label class="block text-gray-700 font-medium mb-2">แนบรูปภาพใหม่ (เลือกได้หลายรูป)</label>
+          <input type="file" id="edit-images-${postId}" accept="image/*" multiple class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="previewEditImages('${postId}', event)">
+          <div id="edit-preview-${postId}" class="flex flex-wrap mt-3">
+            ${images.map(img => `<img src="${img}" class="image-preview" alt="รูปภาพ">`).join('')}
+          </div>
+        </div>
+        <button onclick="saveEdit('${postId}')" class="btn-secondary mr-2">บันทึก</button>
+        <button onclick="cancelEdit('${postId}')" class="btn-danger">ยกเลิก</button>
+      `;
+      
+      postDiv.dataset.editing = 'true';
+      postDiv.dataset.originalImages = post.images;
+    }
+
+    let editImages = {};
+
+    function previewEditImages(postId, event) {
+      const files = event.target.files;
+      const preview = document.getElementById(`edit-preview-${postId}`);
+      preview.innerHTML = '';
+      editImages[postId] = [];
+      
+      for (let file of files) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          editImages[postId].push(e.target.result);
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'image-preview';
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function saveEdit(postId) {
+      const posts = getPosts();
+      const postIndex = posts.findIndex(p => p.id === postId);
+      if (postIndex === -1) return;
+      
+      const newContent = document.getElementById(`edit-content-${postId}`).value.trim();
+      if (!newContent) {
+        showInlineMessage('กรุณากรอกเนื้อหา', `edit-content-${postId}`);
+        return;
+      }
+      
+      posts[postIndex].content = newContent;
+      
+      if (editImages[postId] && editImages[postId].length > 0) {
+        posts[postIndex].images = JSON.stringify(editImages[postId]);
+      }
+      
+      savePosts(posts);
+      delete editImages[postId];
+      renderPosts();
+    }
+
+    function cancelEdit(postId) {
+      delete editImages[postId];
+      renderPosts();
+    }
+
+    async function deletePost(postId) {
+      const postDiv = document.getElementById(`post-${postId}`);
+      const deleteBtn = postDiv.querySelector(`button[onclick="deletePost('${postId}')"]`);
+      
+      if (deleteBtn.textContent === '🗑️ ลบ') {
+        deleteBtn.textContent = '✅ ยืนยันลบ?';
+        deleteBtn.style.backgroundColor = '#f56565';
+        deleteBtn.style.color = 'white';
+        deleteBtn.style.padding = '4px 8px';
+        deleteBtn.style.borderRadius = '4px';
+        
+        setTimeout(() => {
+          if (deleteBtn) {
+            deleteBtn.textContent = '🗑️ ลบ';
+            deleteBtn.style.backgroundColor = '';
+            deleteBtn.style.color = '';
+            deleteBtn.style.padding = '';
+            deleteBtn.style.borderRadius = '';
+          }
+        }, 3000);
+        return;
+      }
+      
+      const posts = getPosts();
+      const filteredPosts = posts.filter(p => p.id !== postId);
+      savePosts(filteredPosts);
+      renderPosts();
+    }
+
+    function showInlineMessage(message, elementId) {
+      const element = document.getElementById(elementId);
+      const existingMsg = element.parentElement.querySelector('.inline-message');
+      if (existingMsg) existingMsg.remove();
+      
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'inline-message text-red-600 text-sm mt-2';
+      msgDiv.textContent = message;
+      element.parentElement.appendChild(msgDiv);
+      
+      setTimeout(() => msgDiv.remove(), 3000);
+    }
+
+    initializeApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9abb9cbb303914b5',t:'MTc2NTM1Nzg1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
